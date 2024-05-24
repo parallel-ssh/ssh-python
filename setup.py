@@ -12,6 +12,7 @@ cpython = platform.python_implementation() == 'CPython'
 try:
     from Cython.Distutils.extension import Extension
     from Cython.Distutils import build_ext
+    from Cython.Build import cythonize
 except ImportError:
     from setuptools import Extension
     USING_CYTHON = False
@@ -48,7 +49,7 @@ _libs = ['ssh'] if not ON_WINDOWS else [
 
 # _comp_args = ["-ggdb"]
 _comp_args = ['-O2', '-g0', '-s'] if not ON_WINDOWS else None
-cython_directives = {
+compiler_directives = {
     'embedsignature': True,
     'boundscheck': False,
     'optimize.use_switch': True,
@@ -56,11 +57,10 @@ cython_directives = {
     'language_level': 2,
 }
 cython_args = {
-    'cython_directives': cython_directives,
-    'cython_compile_time_env': {
+    'compiler_directives': compiler_directives,
+    'compile_time_env': {
         'ON_WINDOWS': ON_WINDOWS,
-    }} \
-    if USING_CYTHON else {}
+    }}
 
 
 runtime_library_dirs = ["$ORIGIN/."] if not SYSTEM_LIBSSH else None
@@ -79,8 +79,7 @@ extensions = [
         libraries=_libs,
         library_dirs=lib_dirs,
         runtime_library_dirs=runtime_library_dirs,
-        extra_compile_args=_comp_args,
-        **cython_args
+        extra_compile_args=_comp_args
     )
     for i in range(len(sources))]
 
@@ -104,7 +103,7 @@ setup(
     name='ssh-python',
     version=versioneer.get_version(),
     cmdclass=cmdclass,
-    url='https://github.com/ParallelSSH/ssh-python',
+    url='https://github.com/parallel-ssh/ssh-python',
     license='LGPLv2.1',
     author='Panos Kittenis',
     author_email='22e889d8@opayq.com',
@@ -130,6 +129,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: System :: Shells',
         'Topic :: System :: Networking',
         'Topic :: Software Development :: Libraries',
@@ -140,6 +140,6 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
     ],
-    ext_modules=extensions,
+    ext_modules=cythonize(extensions, **cython_args) if USING_CYTHON else extensions,
     package_data=package_data,
 )

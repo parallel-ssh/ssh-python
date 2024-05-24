@@ -1,36 +1,41 @@
 FROM quay.io/pypa/manylinux_2_24_x86_64
 
-ENV OPENSSL openssl-3.1.1
-ENV LIBSSH 0.10.5
-ENV KRB 1.21.1
+ENV OPENSSL openssl-3.3.0
+ENV LIBSSH_BRANCH stable-0.10
+ENV KRB_MAJOR_MINOR 1.21
+ENV KRB_PATCH 2
 ENV SYSTEM_LIBSSH 1
 ENV CFLAGS "-g0 -s"
 ENV OPENSSL_ROOT_DIR /usr/lib
 
 RUN apt-get update -y && apt-get install zlib1g-dev cmake perl-core -y
 
-ADD libssh-${LIBSSH}.tar.xz libssh.tar.xz
+# Use a branch of 0.10 because no released version includes all fixes as of 23/05/2024.
+# See https://gitlab.com/libssh/libssh-mirror/-/issues/227
+COPY libssh-mirror-${LIBSSH_BRANCH}.tar.gz .
 ADD https://www.openssl.org/source/${OPENSSL}.tar.gz ${OPENSSL}.tar.gz
-ADD krb5-${KRB}.tar.xz krb5-${KRB}.tar.xz
+ADD https://kerberos.org/dist/krb5/${KRB_MAJOR_MINOR}/krb5-${KRB_MAJOR_MINOR}.${KRB_PATCH}.tar.gz krb5-${KRB_MAJOR_MINOR}.${KRB_PATCH}.tar.gz
 
-RUN tar -xzf ${OPENSSL}.tar.gz
 # Openssl
+RUN tar -xzf ${OPENSSL}.tar.gz
 RUN cd ${OPENSSL} && \
     ./config --prefix=/usr --openssldir=/usr/openssl threads shared && \
     make -j6 && make install_sw
 
 # Kerberos
-RUN cd krb5-${KRB}.tar.xz/krb5-${KRB}/src && \
+RUN tar -xzf krb5-${KRB_MAJOR_MINOR}.${KRB_PATCH}.tar.gz
+RUN cd krb5-${KRB_MAJOR_MINOR}.${KRB_PATCH}/src && \
     ./configure && \
     make -j6 && \
     make install
 
 # Libssh
+RUN tar -xzf libssh-mirror-${LIBSSH_BRANCH}.tar.gz
 RUN mkdir -p build_libssh && cd build_libssh && \
-    cmake ../libssh.tar.xz/libssh-${LIBSSH} -DCMAKE_BUILD_TYPE=Release \
+    cmake ../libssh-mirror-${LIBSSH_BRANCH} -DCMAKE_BUILD_TYPE=Release \
           -DWITH_GSSAPI=ON -DWITH_EXAMPLES=OFF && \
     make -j6 install/strip
 
-RUN rm -rf ${OPENSSL}* libssh build_libssh krb5-${KRB}.tar.xz
+RUN rm -rf ${OPENSSL}* libssh-mirror-${LIBSSH_BRANCH}* build_libssh krb5-${KRB_MAJOR_MINOR}.${KRB_PATCH}*
 
 VOLUME /var/cache

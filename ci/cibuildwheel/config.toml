@@ -1,0 +1,28 @@
+[tool.cibuildwheel]
+build = "cp310-manylinux* cp311-manylinux* cp312-manylinux*"
+skip = ""
+test-skip = ""
+archs = ["auto64"]
+build-frontend = "default"
+config-settings = {}
+dependency-versions = "pinned"
+environment = {}
+environment-pass = []
+build-verbosity = 0
+
+before-all = ""
+before-build = "pip install -U cython"
+repair-wheel-command = ""
+
+test-command = ""
+before-test = ""
+test-requires = []
+test-extras = []
+
+container-engine = "docker"
+
+manylinux-x86_64-image = "localhost/manylinux-ssh-python-x86_64"
+manylinux-aarch64-image = "localhost/manylinux-ssh-python-aarch64"
+
+[tool.cibuildwheel.linux]
+repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
