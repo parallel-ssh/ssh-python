@@ -42,7 +42,7 @@ sources = glob('ssh/*.%s' % (ext,))
 _arch = platform.architecture()[0][0:2]
 _libs = ['ssh'] if not ON_WINDOWS else [
     'ssh', 'Ws2_32', 'user32',
-    'libcrypto%sMD' % _arch, 'libssl%sMD' % _arch,
+    'libcrypto', 'libssl',
     'zlibstatic',
 ]
 
