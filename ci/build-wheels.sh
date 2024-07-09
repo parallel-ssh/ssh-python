@@ -18,7 +18,7 @@
 # Compile wheels
 rm -rf /io/build
 
-PYVERS=$(ls -1d /opt/python/*/bin | grep -v cpython | grep -v cp36- | sort -V)
+PYVERS=$(ls -1d /opt/python/*/bin | grep -v cpython | grep -v cp36- | grep -v cp37- | sort -V)
 # For testing:
 #PYVERS=/opt/python/cp311-cp311/bin
 
