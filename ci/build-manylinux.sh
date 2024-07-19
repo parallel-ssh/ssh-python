@@ -23,7 +23,7 @@ docker_files=(
               )
 
 rm -rf local build ssh/libssh.* ssh/*.so
-python ci/appveyor/fix_version.py .
+python3 ci/appveyor/fix_version.py .
 
 if [[ $(uname -m) == "aarch64" ]]; then
     docker_files=(
