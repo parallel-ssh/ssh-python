@@ -65,6 +65,9 @@ cdef class Session:
 
     def __dealloc__(self):
         if self._session is not NULL:
+            if c_ssh.ssh_is_connected(self._session):
+                with nogil:  # disconnect is socket I/O, so release GIL
+                    c_ssh.ssh_disconnect(self._session)
             c_ssh.ssh_free(self._session)
             self._session = NULL
 
@@ -141,13 +144,8 @@ cdef class Session:
 
     def disconnect(self):
         """
-        Cleanly disconnect connection. All channels left open at this point are invalidated.
-        Interacting with their Channel objects will trigger UB.
+        no-op, disconnection happens on deallocation
         """
-        if not c_ssh.ssh_is_connected(self._session):
-            return
-        with nogil:
-            c_ssh.ssh_disconnect(self._session)
 
     def connector_new(self):
         cdef c_ssh.ssh_connector _connector
