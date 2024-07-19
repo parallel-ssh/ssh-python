@@ -1,9 +1,9 @@
 FROM quay.io/pypa/manylinux2014_x86_64
 
-ENV OPENSSL openssl-3.1.1
+ENV OPENSSL openssl-3.1.6
 ENV LIBSSH 0.10.5
 ENV SYSTEM_LIBSSH 1
-ENV CFLAGS "-g0 -s"
+ENV CFLAGS "-g0 -s -flto -fpic -fno-semantic-interposition"
 
 RUN yum install -y zlib-devel cmake3 perl-core
 
@@ -13,7 +13,10 @@ ADD https://www.openssl.org/source/${OPENSSL}.tar.gz ${OPENSSL}.tar.gz
 RUN tar -xzf ${OPENSSL}.tar.gz
 # Openssl
 RUN cd ${OPENSSL} && \
-    ./config --prefix=/usr --openssldir=/usr/openssl threads shared && \
+    ./config --prefix=/usr --openssldir=/usr/openssl threads no-shared no-stdio \
+	no-autoerrinit no-autoload-config no-autoalginit no-cmp no-cms no-comp no-ct no-dgram no-dso no-filenames no-gost no-ocsp \
+	no-psk no-rfc3779 no-sock no-srp no-srtp no-ts \
+	no-aria no-bf no-blake2 no-camellia no-cast no-cmac no-idea no-md4 no-mdc2 no-ocb no-rc2 no-rc4 no-rmd160 no-siphash no-siv no-sm2 no-sm3 no-sm4 no-whirlpool && \
     make -j6 && make install_sw
 
 # Libssh
